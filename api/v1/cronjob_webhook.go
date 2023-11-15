@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	"context"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -28,21 +29,31 @@ import (
 var cronjoblog = logf.Log.WithName("cronjob-resource")
 
 func (r *CronJob) SetupWebhookWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewWebhookManagedBy(mgr).
+
+	ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()
+
+	customDefaulter := WithCustomDefaulter(mgr.GetScheme(), &CronJob{}, &defaulter{})
+	mgr.GetWebhookServer().Register("/mutate-batch-tutorial-kubebuilder-io-v1-cronjob", customDefaulter)
+
+	return nil
 }
 
 // TODO(user): EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
 //+kubebuilder:webhook:path=/mutate-batch-tutorial-kubebuilder-io-v1-cronjob,mutating=true,failurePolicy=fail,sideEffects=None,groups=batch.tutorial.kubebuilder.io,resources=cronjobs,verbs=create;update,versions=v1,name=mcronjob.kb.io,admissionReviewVersions=v1
 
-var _ webhook.Defaulter = &CronJob{}
+var _ CustomDefaulter = &defaulter{}
+
+type defaulter struct {
+}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
-func (r *CronJob) Default() {
-	cronjoblog.Info("### defaulting", "name", r.Name)
+func (d *defaulter) Default(_ context.Context, obj runtime.Object) error {
+	cronjoblog.Info("### defaulting", "name", obj)
 
+	return nil
 	// TODO(user): fill in your defaulting logic.
 }
 
