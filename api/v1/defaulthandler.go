@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	admissionv1 "k8s.io/api/admission/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -47,10 +48,13 @@ func (h *defaulterForType) Handle(ctx context.Context, req admission.Request) ad
 		return admission.Response{AdmissionResponse: admissionv1.AdmissionResponse{
 			Allowed: true,
 			Result: &metav1.Status{
+
 				Code: http.StatusOK,
 			},
 		}}
 	}
+
+	fmt.Println("### OPER:", req.Operation)
 
 	ctx = admission.NewContextWithRequest(ctx, req)
 
